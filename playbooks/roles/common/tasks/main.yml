@@ -1,0 +1,25 @@
+---
+
+- name: Ensure python is installed 
+  apt: name=python-dev state=present
+
+- name: Ensure http_proxy exists in environment
+  lineinfile: dest=/etc/environment line="http_proxy=http://proxy-us.intel.com:911"
+
+- name: Ensure https_proxy exists in environment
+  lineinfile: dest=/etc/environment line="https_proxy=http://proxy-us.intel.com:911" state=present
+
+- name: Create tmp no_proxy file
+  template: src=templates/no_proxy dest=/tmp/no_proxy
+
+- name: Remove existing no_proxy
+  lineinfile: dest=/etc/environment regexp="no_proxy.*" state=absent
+
+- shell: cat /etc/environment
+  register: env_contents
+
+- name: Set no_proxy into /etc/environment
+  shell: printf "%s" $(</tmp/no_proxy) >> /etc/environment
+  args:
+    executable: /bin/bash
+  when: env_contents.stdout.find('no_proxy') == -1

@@ -1,0 +1,24 @@
+---
+- hosts: masters
+  remote_user: ad_jascott1
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  vars_prompt:
+   - name: "user_password"    
+     prompt: "Enter a password for the k8s user"    
+     private: yes    
+     encrypt: "sha512_crypt"
+     confirm: yes    
+     salt_size: 7
+
+  environment:
+    http_proxy: http://proxy-us.intel.com:911
+    https_proxy: http://proxy-us.intel.com:911
+    no_proxy: .intel.com,localhost
+
+  roles:
+     - pki
+     - common
+     - docker  

@@ -1,0 +1,51 @@
+---
+
+- name: Ensure apt-transport-https is installed
+  apt: name=apt-transport-https state=present
+
+- name: Ensure ca-certificates is installed
+  apt: name=ca-certificates state=present
+
+- name: Ensure bridge-utils is installed
+  apt: name=bridge-utils state=present
+
+- name: Add docker apt key
+  apt_key: keyserver=hkp://p80.pool.sks-keyservers.net:80 id=58118E89F3A912897C070ADBF76221572C52609D
+
+- name: Copy the Docker list config for apt
+  copy: src=templates/docker.list dest=/etc/apt/sources.list.d/docker.list
+  
+- name: Ensure docker-engine is installed
+  apt: name=docker-engine state=present update_cache=yes
+
+- name: Ensure docker has http proxy set
+  lineinfile: dest=/etc/default/docker regexp='^export http_proxy.*' line='export http_proxy="http://proxy-us.intel.com:911/"'
+  tags:
+    - dockerproxy
+
+
+- name: Ensure docker has https proxy set
+  lineinfile: dest=/etc/default/docker regexp='^export https_proxy.*' line='export https_proxy="http://proxy-us.intel.com:911/"'
+  tags:
+    - dockerproxy
+
+- name: Ensure docker has no_proxy set
+  lineinfile: dest=/etc/default/docker regexp='^export no_proxy.*' line='export no_proxy=localhost,.intel.com'
+  tags:
+    - dockerproxy
+
+- name: Ensure docker has nameservers set
+  lineinfile: dest=/etc/default/docker regexp='^DOCKER_OPTS="\$DOCKER_OPTS.*' line='DOCKER_OPTS="$DOCKER_OPTS --dns 8.8.8.8 --dns 8.8.4.4"'
+  tags:
+    - dockerproxy
+
+- name: Restart docker service
+  service: name=docker state=restarted
+  tags:
+    - dockerproxy
+
+# TODO move out so this role can be 'pure' 
+- name: Adding existing user k8s to group sudo
+  user: name=k8s
+        groups=docker
+        append=yes
