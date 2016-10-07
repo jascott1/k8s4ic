@@ -166,7 +166,8 @@ IMPORTANT: Add all the nodes to the no_proxy var.
 
 #### Patch bug: Missing untar and copy for salt 
 
-The download-release script is missing an untar and copy commmand and kube-up.sh will fail unless the script is modified.
+The download-release script is missing an untar and copy commmand and kube-up.sh will fail unless the script is modified.  
+See ths issue for more info: https://github.com/kubernetes/kubernetes/issues/30751
 
 ##### add untar
 
